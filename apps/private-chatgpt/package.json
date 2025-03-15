@@ -1,0 +1,8 @@
+{
+  "name": "@private-chatgpt/private-chatgpt",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "name": "private-chatgpt"
+  }
+}

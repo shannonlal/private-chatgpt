@@ -54,14 +54,18 @@ const PromptInput: React.FC = () => {
   return (
     <form
       onSubmit={handleSendMessage}
-      className="flex flex-col space-y-4 p-4 bg-gray-100 rounded-lg"
+      className="flex flex-col space-y-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm
+        transition-all duration-300 ease-in-out
+        hover:shadow-md focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent"
     >
       {/* System Prompt Input */}
       <TextArea
         value={systemPrompt}
         onChange={e => setSystemPrompt(e.target.value)}
         placeholder="Enter system prompt (optional)"
-        className="w-full"
+        className="w-full transition-colors duration-300
+          focus:border-primary focus:ring-1 focus:ring-primary
+          hover:border-gray-300"
         rows={2}
       />
 
@@ -70,7 +74,9 @@ const PromptInput: React.FC = () => {
         value={userPrompt}
         onChange={e => setUserPrompt(e.target.value)}
         placeholder="Enter your message"
-        className="w-full"
+        className="w-full transition-colors duration-300
+          focus:border-primary focus:ring-1 focus:ring-primary
+          hover:border-gray-300"
         rows={4}
         required
       />
@@ -81,10 +87,13 @@ const PromptInput: React.FC = () => {
           type="submit"
           variant="primary"
           disabled={!userPrompt.trim()}
-          className="flex items-center space-x-2"
+          className="flex items-center space-x-2
+            transition-all duration-300 ease-in-out
+            disabled:opacity-50 disabled:cursor-not-allowed
+            hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
         >
           <span>Send</span>
-          <IconSend className="w-5 h-5" />
+          <IconSend className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
         </Button>
       </div>
     </form>

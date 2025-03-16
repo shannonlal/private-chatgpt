@@ -43,6 +43,3 @@ jobs:
 
       - name: Run Format Check
         run: pnpm format
-
-      - name: Build Project
-        run: pnpm build

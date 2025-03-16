@@ -50,13 +50,11 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     setSystemPrompt,
     setUserPrompt,
     addMessageToHistory,
-    clearConversationHistory
+    clearConversationHistory,
   };
 
   return (
-    <ConversationContext.Provider value={contextValue}>
-      {children}
-    </ConversationContext.Provider>
+    <ConversationContext.Provider value={contextValue}>{children}</ConversationContext.Provider>
   );
 };
 

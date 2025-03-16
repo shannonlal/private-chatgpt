@@ -3,5 +3,6 @@ node_modules
 build
 dist
 coverage
-pnpm-lock.yaml
 public
+*.config.js
+next-env.d.ts

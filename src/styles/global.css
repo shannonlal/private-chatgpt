@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Button Styles */
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-2.5 rounded-full font-medium transition-colors duration-200;
+  }
+  .btn-primary {
+    @apply btn bg-primary text-white hover:bg-primary-hover shadow-sm;
+  }
+  .btn-secondary {
+    @apply btn bg-secondary text-white hover:bg-secondary-hover;
+  }
+
+  /* Dropdown Styles */
+  .dropdown {
+    @apply relative inline-block;
+  }
+  .dropdown-content {
+    @apply absolute z-50 mt-2 w-56 rounded-dropdown bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none;
+  }
+  .dropdown-item {
+    @apply block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer;
+  }
+
+  /* Input Styles */
+  .input {
+    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6;
+  }
+}

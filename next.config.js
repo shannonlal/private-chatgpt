@@ -10,6 +10,7 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   pageExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  output: 'standalone', // Enable standalone output for Docker
 };
 
 module.exports = nextConfig;

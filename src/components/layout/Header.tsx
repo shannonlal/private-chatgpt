@@ -15,7 +15,7 @@ export const Header: React.FC = () => {
     <header className="fixed top-0 w-full bg-white shadow-sm z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="text-xl font-bold text-gray-800">
-          French Idol
+          Secure ChatGPT
         </Link>
         <MenuDropdown items={menuItems} />
       </div>

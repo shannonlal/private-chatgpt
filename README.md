@@ -1,81 +1,74 @@
-# PrivateChatgpt
+# Private ChatGPT
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+## OpenAI Integration
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+This project integrates OpenAI's Chat Completions API to provide an interactive chat experience.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+### Prerequisites
 
-## Finish your CI setup
+- Node.js (v18+)
+- pnpm package manager
+- OpenAI API Key
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/ZObGJnkstq)
+### Configuration
 
-## Run tasks
+1. Copy `.env-sample` to `.env`
+2. Add your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
 
-To run the dev server for your app, use:
+### Features
 
-```sh
-npx nx serve private-chatgpt
-```
+- Real-time chat with OpenAI models
+- Conversation history management
+- System and user prompt support
+- Error handling
+- Responsive UI
 
-To create a production bundle:
+### Environment Variables
 
-```sh
-npx nx build private-chatgpt
-```
+- `OPENAI_API_KEY`: Your OpenAI API key (required)
+- `OPENAI_MODEL`: OpenAI model to use (default: gpt-4o)
+- `OPENAI_MAX_TOKENS`: Maximum tokens for completion
+- `OPENAI_TEMPERATURE`: Creativity/randomness of responses
 
-To see all available targets to run for a project, run:
+### Development
 
-```sh
-npx nx show project private-chatgpt
-```
+1. Install dependencies:
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+   ```bash
+   pnpm install
+   ```
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+2. Run development server:
+   ```bash
+   pnpm dev
+   ```
 
-## Add new projects
+### Project Structure
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+- `src/pages/api/chat.ts`: OpenAI API route handler
+- `src/components/chat/PromptInput.tsx`: User input component
+- `src/components/chat/MessageDisplay.tsx`: Chat message display
+- `src/contexts/ConversationContext.tsx`: Conversation state management
 
-Use the plugin's generator to create new projects.
+### Error Handling
 
-To generate a new application, use:
+The application includes comprehensive error handling:
 
-```sh
-npx nx g @nx/react:app demo
-```
+- API call errors
+- Input validation
+- User-friendly error messages
 
-To generate a new library, use:
+### Technologies
 
-```sh
-npx nx g @nx/react:lib mylib
-```
+- Next.js
+- TypeScript
+- Tailwind CSS
+- OpenAI SDK
+- Vercel Analytics
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+### License
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+[Add your license information]

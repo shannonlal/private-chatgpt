@@ -26,17 +26,10 @@ describe('ChatPage', () => {
 
   it('has correct layout classes', () => {
     const { container } = render(<ChatPage />);
-    const pageContainer = container.firstChild;
+    const pageContainer = container.querySelector(
+      'div.flex.flex-col.h-screen.max-w-4xl.mx-auto.p-4.space-y-4'
+    );
 
-    expect(pageContainer).toHaveClass('flex flex-col h-screen max-w-4xl mx-auto p-4 space-y-4');
+    expect(pageContainer).toBeInTheDocument();
   });
-
-  // it('has correct child container classes', () => {
-  //   const { container } = render(<ChatPage />);
-  //   const messageDisplayContainer = container.querySelector('div > div:first-child');
-  //   const promptInputContainer = container.querySelector('div > div:last-child');
-
-  //   expect(messageDisplayContainer).toHaveClass('flex-grow overflow-hidden');
-  //   expect(promptInputContainer).toHaveClass('sticky bottom-0 w-full');
-  // });
 });

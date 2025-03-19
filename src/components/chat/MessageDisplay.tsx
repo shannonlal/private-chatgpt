@@ -39,9 +39,15 @@ const MessageDisplay: React.FC = () => {
       {conversationHistory.map(message => (
         <div
           key={message.id}
-          className={cn('max-w-[80%] p-3 rounded-lg', getMessageClasses(message.role))}
+          className={cn(
+            'max-w-[80%] p-3 rounded-lg flex flex-col',
+            getMessageClasses(message.role)
+          )}
         >
-          {message.content}
+          <div>{message.content}</div>
+          <small className="text-xs text-gray-500 self-end mt-1">
+            {new Date(message.timestamp).toLocaleTimeString()}
+          </small>
         </div>
       ))}
       <div ref={messagesEndRef} />

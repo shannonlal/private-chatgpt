@@ -15,6 +15,7 @@ export interface ConversationContextType {
   // Methods to manage conversation
   addUserMessageToHistory: (content: string) => void;
   addAssistantMessageToHistory: (content: string) => void;
+  addMessageToHistory: (message: _Message) => void;
   clearConversationHistory: () => void;
 }
 
@@ -52,6 +53,11 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     setConversationHistory(prevHistory => [...prevHistory, newMessage]);
   };
 
+  // Generic method to add a message to conversation history
+  const addMessageToHistory = (message: _Message) => {
+    setConversationHistory(prevHistory => [...prevHistory, message]);
+  };
+
   // Method to clear conversation history
   const clearConversationHistory = () => {
     setConversationHistory([]);
@@ -66,6 +72,7 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     setUserPrompt,
     addUserMessageToHistory,
     addAssistantMessageToHistory,
+    addMessageToHistory,
     clearConversationHistory,
   };
 

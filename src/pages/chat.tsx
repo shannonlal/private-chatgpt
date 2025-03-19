@@ -9,11 +9,11 @@ const ChatPage: NextPage = () => {
   return (
     <Layout>
       <ConversationProvider>
-        <div className="flex flex-col h-screen max-h-screen">
+        <div className="flex flex-col h-screen max-w-4xl mx-auto p-4 space-y-4">
           <div className="flex-grow overflow-hidden">
             <MessageDisplay />
           </div>
-          <div className="p-4 border-t border-gray-200">
+          <div className="border-t border-gray-200">
             <PromptInput />
           </div>
         </div>

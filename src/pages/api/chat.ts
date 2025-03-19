@@ -32,7 +32,27 @@ export default async function handler(
   }
 
   try {
-    const { systemPrompt, userPrompt, conversationHistory }: ChatCompletionRequest = req.body;
+    // Manually parse the body
+    const buffer = await new Promise<Buffer>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      req.on('data', chunk => chunks.push(chunk));
+      req.on('end', () => resolve(Buffer.concat(chunks)));
+      req.on('error', reject);
+    });
+
+    const body = JSON.parse(buffer.toString());
+
+    // Validate request body
+    if (!body.systemPrompt || !body.userPrompt) {
+      return res.status(400).json({
+        error: {
+          message: 'Missing required fields: systemPrompt or userPrompt',
+          type: 'validation_error',
+        },
+      });
+    }
+
+    const { systemPrompt, userPrompt, conversationHistory }: ChatCompletionRequest = body;
 
     // Construct messages for OpenAI API
     const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
@@ -58,12 +78,21 @@ export default async function handler(
   } catch (error) {
     console.error('OpenAI API Error:', error);
 
+    if (error instanceof SyntaxError) {
+      return res.status(400).json({
+        error: {
+          message: 'Invalid JSON in request body',
+          type: 'parsing_error',
+        },
+      });
+    }
+
     if (error instanceof OpenAI.APIError) {
       return res.status(error.status || 500).json({
         error: {
           message: error.message,
           type: 'openai_api_error',
-          code: error.code,
+          code: error.code || undefined,
         },
       });
     }

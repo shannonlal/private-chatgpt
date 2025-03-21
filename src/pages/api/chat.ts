@@ -6,6 +6,7 @@ import {
   OpenAIErrorResponse,
   Message as _Message,
 } from '../../types/chat';
+import connectMongoDB from '../../lib/mongodb';
 
 // Validate environment variables
 if (!process.env.OPENAI_API_KEY) {
@@ -32,6 +33,9 @@ export default async function handler(
   }
 
   try {
+    // Connect to MongoDB
+    await connectMongoDB();
+
     // Manually parse the body
     const buffer = await new Promise<Buffer>((resolve, reject) => {
       const chunks: Buffer[] = [];

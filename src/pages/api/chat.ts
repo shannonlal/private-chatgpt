@@ -1,11 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { OpenAI } from 'openai';
+import { v4 as uuidv4 } from 'uuid';
 import {
   ChatCompletionRequest,
   ChatCompletionResponse,
   OpenAIErrorResponse,
   Message as _Message,
 } from '../../types/chat';
+import connectMongoDB from '../../lib/mongodb';
+import Conversation from '../../models/Conversation';
+import Message from '../../models/Message';
 
 // Validate environment variables
 if (!process.env.OPENAI_API_KEY) {
@@ -32,6 +36,9 @@ export default async function handler(
   }
 
   try {
+    // Connect to MongoDB
+    await connectMongoDB();
+
     // Manually parse the body
     const buffer = await new Promise<Buffer>((resolve, reject) => {
       const chunks: Buffer[] = [];
@@ -52,7 +59,33 @@ export default async function handler(
       });
     }
 
-    const { systemPrompt, userPrompt, conversationHistory }: ChatCompletionRequest = body;
+    const { systemPrompt, userPrompt, conversationHistory, conversationId }: ChatCompletionRequest =
+      body;
+
+    // Find or create conversation
+    let conversation = conversationId ? await Conversation.findOne({ conversationId }) : null;
+
+    if (!conversation) {
+      conversation = new Conversation({
+        conversationId: uuidv4(),
+        messages: [],
+      });
+      await conversation.save();
+    }
+
+    // Create and save system message
+    const systemMessage = await Message.createForConversation(conversation._id, {
+      role: 'system',
+      content: systemPrompt,
+      timestamp: Date.now(),
+    });
+
+    // Create and save user message
+    const userMessage = await Message.createForConversation(conversation._id, {
+      role: 'user',
+      content: userPrompt,
+      timestamp: Date.now(),
+    });
 
     // Construct messages for OpenAI API
     const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
@@ -74,7 +107,21 @@ export default async function handler(
     // Extract assistant's response
     const assistantResponse = completion.choices[0]?.message?.content?.trim() ?? '';
 
-    return res.status(200).json({ assistantResponse });
+    // Create and save assistant message
+    const assistantMessage = await Message.createForConversation(conversation._id, {
+      role: 'assistant',
+      content: assistantResponse,
+      timestamp: Date.now(),
+    });
+
+    // Update conversation with new messages
+    conversation.messages.push(systemMessage._id, userMessage._id, assistantMessage._id);
+    await conversation.save();
+
+    return res.status(200).json({
+      assistantResponse,
+      conversationId: conversation.conversationId,
+    });
   } catch (error) {
     console.error('OpenAI API Error:', error);
 

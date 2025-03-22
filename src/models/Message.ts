@@ -8,7 +8,15 @@ export interface MessageDocument extends Omit<MessageType, 'id'>, mongoose.Docum
   messageId: string;
 }
 
-const MessageSchema = new mongoose.Schema<MessageDocument>(
+// Define static methods interface
+interface MessageModel extends mongoose.Model<MessageDocument> {
+  createForConversation(
+    conversationId: mongoose.Types.ObjectId,
+    messageData: Partial<MessageDocument>
+  ): Promise<MessageDocument>;
+}
+
+const MessageSchema = new mongoose.Schema<MessageDocument, MessageModel>(
   {
     messageId: {
       type: String,
@@ -46,12 +54,7 @@ const MessageSchema = new mongoose.Schema<MessageDocument>(
 // Indexing for efficient querying
 MessageSchema.index({ conversation: 1, timestamp: -1 });
 
-// Method to find messages by conversation
-MessageSchema.statics.findByConversation = function (conversationId: mongoose.Types.ObjectId) {
-  return this.find({ conversation: conversationId }).sort({ timestamp: 1 });
-};
-
-// Method to create a new message and add it to a conversation
+// Static method to create a message for a specific conversation
 MessageSchema.statics.createForConversation = async function (
   conversationId: mongoose.Types.ObjectId,
   messageData: Partial<MessageDocument>
@@ -63,7 +66,13 @@ MessageSchema.statics.createForConversation = async function (
   return message.save();
 };
 
+// Method to find messages by conversation
+MessageSchema.statics.findByConversation = function (conversationId: mongoose.Types.ObjectId) {
+  return this.find({ conversation: conversationId }).sort({ timestamp: 1 });
+};
+
 export const Message =
-  mongoose.models.Message || mongoose.model<MessageDocument>('Message', MessageSchema);
+  mongoose.models.Message ||
+  mongoose.model<MessageDocument, MessageModel>('Message', MessageSchema);
 
 export default Message;

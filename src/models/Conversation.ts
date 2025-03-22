@@ -10,7 +10,12 @@ export interface ConversationDocument extends mongoose.Document {
   conversationId: string;
 }
 
-const ConversationSchema = new mongoose.Schema<ConversationDocument>(
+// Define static methods interface
+interface ConversationModel extends mongoose.Model<ConversationDocument> {
+  findByConversationId(conversationId: string): Promise<ConversationDocument | null>;
+}
+
+const ConversationSchema = new mongoose.Schema<ConversationDocument, ConversationModel>(
   {
     conversationId: {
       type: String,
@@ -57,9 +62,9 @@ ConversationSchema.methods.addMessage = async function (messageId: mongoose.Type
   return this.save();
 };
 
-// Method to get conversation messages
-ConversationSchema.methods.getMessages = function () {
-  return this.populate('messages');
+// Static method to find conversation by conversationId
+ConversationSchema.statics.findByConversationId = function (conversationId: string) {
+  return this.findOne({ conversationId });
 };
 
 // Prevent returning deleted conversations by default
@@ -69,6 +74,6 @@ ConversationSchema.pre('find', function () {
 
 export const Conversation =
   mongoose.models.Conversation ||
-  mongoose.model<ConversationDocument>('Conversation', ConversationSchema);
+  mongoose.model<ConversationDocument, ConversationModel>('Conversation', ConversationSchema);
 
 export default Conversation;

@@ -11,46 +11,76 @@ const MessageDisplay: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversationHistory]);
 
-  // Determine message style based on role
+  // Enhanced message styling
   const getMessageClasses = (role: string) => {
     switch (role) {
       case 'user':
-        return 'bg-blue-100 text-blue-800 self-end';
+        return 'bg-blue-50 text-blue-800 self-start ml-4 rounded-lg';
       case 'system':
-        return 'bg-gray-100 text-gray-800 italic';
+        return 'bg-gray-100 text-gray-800 italic text-center w-full mb-4 p-3';
       case 'assistant':
-        return 'bg-green-100 text-green-800 self-start';
+        return 'bg-green-50 text-green-800 self-start mr-4 rounded-lg';
       default:
         return '';
     }
   };
 
-  // Render empty state if no messages
-  if (conversationHistory.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full text-gray-500">
-        No messages yet. Start a conversation!
+  // Grouped message rendering
+  const renderMessageGroups = () => {
+    type MessageGroup = {
+      type: string;
+      messages: typeof conversationHistory;
+    };
+
+    const groupedMessages = conversationHistory.reduce<MessageGroup[]>((groups, message, index) => {
+      if (message.role === 'system' && index === 0) {
+        // System message always at the top
+        groups.unshift({ type: 'system', messages: [message] });
+      } else if (message.role === 'user' || message.role === 'assistant') {
+        const lastGroup = groups[groups.length - 1];
+        if (lastGroup && lastGroup.type !== message.role) {
+          groups.push({ type: message.role, messages: [message] });
+        } else if (lastGroup) {
+          lastGroup.messages.push(message);
+        } else {
+          groups.push({ type: message.role, messages: [message] });
+        }
+      }
+      return groups;
+    }, []);
+
+    return groupedMessages.map((group, groupIndex) => (
+      <div
+        key={groupIndex}
+        className={`flex flex-col ${group.type === 'user' ? 'items-start' : 'items-start'}`}
+      >
+        {group.messages.map(message => (
+          <div
+            key={message.id}
+            className={cn('max-w-[80%] p-3 my-2 rounded-lg', getMessageClasses(message.role))}
+          >
+            <div>{message.content}</div>
+            <small className="text-xs text-gray-500 self-end mt-1">
+              {new Date(message.timestamp).toLocaleTimeString()}
+            </small>
+          </div>
+        ))}
       </div>
-    );
-  }
+    ));
+  };
 
   return (
-    <div className="flex flex-col space-y-4 p-4 overflow-y-auto max-h-[calc(100vh-300px)]">
-      {conversationHistory.map(message => (
-        <div
-          key={message.id}
-          className={cn(
-            'max-w-[80%] p-3 rounded-lg flex flex-col',
-            getMessageClasses(message.role)
-          )}
-        >
-          <div>{message.content}</div>
-          <small className="text-xs text-gray-500 self-end mt-1">
-            {new Date(message.timestamp).toLocaleTimeString()}
-          </small>
+    <div className="flex flex-col flex-grow overflow-y-auto p-6 space-y-4">
+      {conversationHistory.length === 0 ? (
+        <div className="flex items-center justify-center h-full text-gray-500">
+          No messages yet. Start a conversation!
         </div>
-      ))}
-      <div ref={messagesEndRef} />
+      ) : (
+        <>
+          {renderMessageGroups()}
+          <div ref={messagesEndRef} />
+        </>
+      )}
     </div>
   );
 };

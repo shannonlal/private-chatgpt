@@ -204,31 +204,38 @@ const PromptInput: React.FC = () => {
   return (
     <form
       onSubmit={handleSendMessage}
-      className="flex flex-col space-y-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm
-        transition-all duration-300 ease-in-out
-        hover:shadow-md focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent"
+      className="flex flex-col h-full p-4 space-y-4 bg-gray-50 border-r border-gray-200"
     >
-      {/* System Prompt Input */}
-      <TextArea
-        value={systemPrompt}
-        onChange={e => setSystemPrompt(e.target.value)}
-        placeholder="Enter system prompt (optional)"
-        className="w-full transition-colors duration-300
-          focus:border-primary focus:ring-1 focus:ring-primary
-          hover:border-gray-300"
-        rows={2}
-      />
+      {/* System Prompt Section - More prominent and one-time */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          System Prompt (Set Once)
+        </label>
+        <TextArea
+          value={systemPrompt}
+          onChange={e => setSystemPrompt(e.target.value)}
+          placeholder="Define the AI's behavior and context"
+          className="w-full border-2 border-primary-100 focus:ring-primary-500"
+          rows={3}
+          disabled={conversationHistory.some(msg => msg.role === 'system')}
+        />
+        {conversationHistory.some(msg => msg.role === 'system') && (
+          <p className="text-xs text-gray-500 mt-2">
+            System prompt has been set for this conversation
+          </p>
+        )}
+      </div>
 
-      {/* User Prompt Input */}
-      <TextArea
-        value={userPrompt}
-        onChange={e => setUserPrompt(e.target.value)}
-        placeholder="Enter your message"
-        className="w-full transition-colors duration-300
-          focus:border-primary focus:ring-1 focus:ring-primary
-          hover:border-gray-300"
-        rows={4}
-      />
+      {/* User Prompt Section */}
+      <div className="flex-grow">
+        <TextArea
+          value={userPrompt}
+          onChange={e => setUserPrompt(e.target.value)}
+          placeholder="Type your message..."
+          className="w-full h-full"
+          rows={10}
+        />
+      </div>
 
       {/* File Upload Section */}
       <div className="space-y-2">

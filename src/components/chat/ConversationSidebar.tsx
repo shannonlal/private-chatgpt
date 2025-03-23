@@ -16,7 +16,7 @@ const ConversationSidebar: React.FC = () => {
     let currentDate = '';
     let currentGroup: typeof conversationHistory = [];
 
-    conversationHistory.forEach((message) => {
+    conversationHistory.forEach(message => {
       const messageDate = new Date(message.timestamp).toLocaleDateString();
 
       if (messageDate !== currentDate) {

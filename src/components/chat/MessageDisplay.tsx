@@ -52,19 +52,11 @@ const MessageDisplay: React.FC = () => {
     return groupedMessages.map((group, groupIndex) => (
       <div
         key={groupIndex}
-        className={cn(
-          'flex flex-col gap-2',
-          group.type === 'user' ? 'items-end' : 'items-start'
-        )}
+        className={cn('flex flex-col gap-2', group.type === 'user' ? 'items-end' : 'items-start')}
       >
         {group.messages.map(message => (
-          <div
-            key={message.id}
-            className={cn('p-4 rounded-lg', getMessageClasses(message.role))}
-          >
-            <div className="prose max-w-none">
-              {message.content}
-            </div>
+          <div key={message.id} className={cn('p-4 rounded-lg', getMessageClasses(message.role))}>
+            <div className="prose max-w-none">{message.content}</div>
             <div className="text-xs text-gray-400 mt-2">
               {new Date(message.timestamp).toLocaleTimeString()}
             </div>

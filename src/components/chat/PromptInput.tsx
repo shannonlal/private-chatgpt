@@ -267,17 +267,13 @@ const PromptInput: React.FC = () => {
           )}
         </div>
 
-        {fileUploadError && (
-          <div className="text-red-600 text-sm">{fileUploadError}</div>
-        )}
+        {fileUploadError && <div className="text-red-600 text-sm">{fileUploadError}</div>}
 
         {uploadedFiles.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {uploadedFiles.map((file, index) => (
               <div key={index} className="flex items-center bg-gray-100 rounded-md px-2 py-1">
-                <span className="text-sm text-gray-600 mr-2">
-                  {file.name}
-                </span>
+                <span className="text-sm text-gray-600 mr-2">{file.name}</span>
                 <button
                   type="button"
                   onClick={() => removeFile(file)}

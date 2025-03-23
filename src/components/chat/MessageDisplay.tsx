@@ -15,11 +15,11 @@ const MessageDisplay: React.FC = () => {
   const getMessageClasses = (role: string) => {
     switch (role) {
       case 'user':
-        return 'bg-blue-50 text-blue-800 self-start ml-4 rounded-lg';
+        return 'bg-blue-50 text-gray-900 self-end max-w-[80%] rounded-lg';
       case 'system':
-        return 'bg-gray-100 text-gray-800 italic text-center w-full mb-4 p-3';
+        return 'bg-gray-100 text-gray-700 italic w-full mb-4 p-3 text-sm border-l-4 border-gray-300';
       case 'assistant':
-        return 'bg-green-50 text-green-800 self-start mr-4 rounded-lg';
+        return 'bg-white text-gray-900 self-start max-w-[80%] rounded-lg shadow-sm';
       default:
         return '';
     }
@@ -52,17 +52,22 @@ const MessageDisplay: React.FC = () => {
     return groupedMessages.map((group, groupIndex) => (
       <div
         key={groupIndex}
-        className={`flex flex-col ${group.type === 'user' ? 'items-start' : 'items-start'}`}
+        className={cn(
+          'flex flex-col gap-2',
+          group.type === 'user' ? 'items-end' : 'items-start'
+        )}
       >
         {group.messages.map(message => (
           <div
             key={message.id}
-            className={cn('max-w-[80%] p-3 my-2 rounded-lg', getMessageClasses(message.role))}
+            className={cn('p-4 rounded-lg', getMessageClasses(message.role))}
           >
-            <div>{message.content}</div>
-            <small className="text-xs text-gray-500 self-end mt-1">
+            <div className="prose max-w-none">
+              {message.content}
+            </div>
+            <div className="text-xs text-gray-400 mt-2">
               {new Date(message.timestamp).toLocaleTimeString()}
-            </small>
+            </div>
           </div>
         ))}
       </div>
@@ -70,7 +75,7 @@ const MessageDisplay: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col flex-grow overflow-y-auto p-6 space-y-4">
+    <div className="flex flex-col flex-grow overflow-y-auto p-6 space-y-6 bg-gray-50">
       {conversationHistory.length === 0 ? (
         <div className="flex items-center justify-center h-full text-gray-500">
           No messages yet. Start a conversation!

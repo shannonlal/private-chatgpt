@@ -202,129 +202,93 @@ const PromptInput: React.FC = () => {
   };
 
   return (
-    <form
-      onSubmit={handleSendMessage}
-      className="flex flex-col h-full p-4 space-y-4 bg-gray-50 border-r border-gray-200"
-    >
-      {/* System Prompt Section - More prominent and one-time */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          System Prompt (Set Once)
-        </label>
-        <TextArea
-          value={systemPrompt}
-          onChange={e => setSystemPrompt(e.target.value)}
-          placeholder="Define the AI's behavior and context"
-          className="w-full border-2 border-primary-100 focus:ring-primary-500"
-          rows={3}
-          disabled={conversationHistory.some(msg => msg.role === 'system')}
-        />
-        {conversationHistory.some(msg => msg.role === 'system') && (
-          <p className="text-xs text-gray-500 mt-2">
-            System prompt has been set for this conversation
-          </p>
-        )}
-      </div>
-
-      {/* User Prompt Section */}
-      <div className="flex-grow">
-        <TextArea
-          value={userPrompt}
-          onChange={e => setUserPrompt(e.target.value)}
-          placeholder="Type your message..."
-          className="w-full h-full"
-          rows={10}
-        />
-      </div>
-
-      {/* File Upload Section */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              multiple
-              accept={ALLOWED_FILE_TYPES.map(t => t.extension).join(',')}
-              className="hidden"
-            />
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadedFiles.length >= MAX_FILES}
-            >
-              Upload Documents
-            </Button>
-
-            {/* Remaining Slots Indicator */}
-            <div className="text-sm text-gray-600">
-              {`${MAX_FILES - uploadedFiles.length} file slots remaining`}
-            </div>
-          </div>
-        </div>
-
-        {/* File Preview with Remove Option and Size Indicator */}
-        {uploadedFiles.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {uploadedFiles.map((file, index) => {
-              const fileType = ALLOWED_FILE_TYPES.find(type => type.type === file.type);
-
-              return (
-                <div key={index} className="flex items-center bg-gray-100 rounded-md px-2 py-1">
-                  <span className="text-sm text-gray-600 mr-2">
-                    {`${file.name} (${fileType?.description || 'Unknown'}, ${(file.size / 1024).toFixed(1)}KB)`}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="small"
-                    onClick={() => removeFile(file)}
-                  >
-                    ✕
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* File Upload Error Display */}
-        {fileUploadError && <div className="text-red-500 text-sm">{fileUploadError}</div>}
-      </div>
-
-      {/* Error Display */}
-      {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-          role="alert"
-        >
-          <div className="flex items-center">
-            <IconError className="w-6 h-6 mr-2" />
-            <span className="block sm:inline">{error}</span>
-          </div>
+    <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-gray-200">
+      {!conversationHistory.some(msg => msg.role === 'system') && (
+        <div className="mb-4">
+          <TextArea
+            value={systemPrompt}
+            onChange={e => setSystemPrompt(e.target.value)}
+            placeholder="Optional: Set system prompt to define AI behavior"
+            className="w-full border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
+            rows={2}
+          />
         </div>
       )}
 
-      {/* Send Button */}
-      <div className="flex justify-end">
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={(!userPrompt.trim() && uploadedFiles.length === 0) || isLoading}
-          className="flex items-center space-x-2
-            transition-all duration-300 ease-in-out
-            disabled:opacity-50 disabled:cursor-not-allowed
-            hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-        >
-          <span>{isLoading ? 'Sending...' : 'Send'}</span>
-          {isLoading ? (
-            <span className="animate-spin">⏳</span>
-          ) : (
-            <IconSend className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-start space-x-2">
+          <TextArea
+            value={userPrompt}
+            onChange={e => setUserPrompt(e.target.value)}
+            placeholder="Message Claude..."
+            className="flex-1 min-h-[60px] max-h-[200px] resize-y border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
+            rows={1}
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={(!userPrompt.trim() && uploadedFiles.length === 0) || isLoading}
+            className="flex items-center justify-center w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50"
+          >
+            {isLoading ? (
+              <span className="animate-spin">⏳</span>
+            ) : (
+              <IconSend className="w-5 h-5" />
+            )}
+          </Button>
+        </div>
+
+        {error && (
+          <div className="text-red-600 text-sm flex items-center">
+            <IconError className="w-4 h-4 mr-2" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <div className="flex items-center space-x-4 text-sm text-gray-600">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            multiple
+            accept={ALLOWED_FILE_TYPES.map(t => t.extension).join(',')}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadedFiles.length >= MAX_FILES}
+            className="text-blue-600 hover:text-blue-700 disabled:opacity-50"
+          >
+            Upload files
+          </button>
+          {uploadedFiles.length > 0 && (
+            <span>{`${uploadedFiles.length} file${uploadedFiles.length === 1 ? '' : 's'} selected`}</span>
           )}
-        </Button>
+        </div>
+
+        {fileUploadError && (
+          <div className="text-red-600 text-sm">{fileUploadError}</div>
+        )}
+
+        {uploadedFiles.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {uploadedFiles.map((file, index) => (
+              <div key={index} className="flex items-center bg-gray-100 rounded-md px-2 py-1">
+                <span className="text-sm text-gray-600 mr-2">
+                  {file.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeFile(file)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </form>
   );

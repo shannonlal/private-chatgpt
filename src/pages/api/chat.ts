@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { OpenAI } from 'openai';
 import { v4 as uuidv4 } from 'uuid';
@@ -69,6 +70,7 @@ export default async function handler(
       userPrompt: string
     ): Promise<string> => {
       try {
+        console.log('Generating Conversation name');
         const nameCompletion = await openai.chat.completions.create({
           model: DEFAULT_MODEL,
           messages: [
@@ -96,24 +98,29 @@ export default async function handler(
     if (!conversation) {
       console.log('Create new conversation');
       const conversationName = await generateConversationName(systemPrompt, userPrompt);
+      console.log('Conversation Name', conversationName);
 
       conversation = new Conversation({
         conversationId: uuidv4(),
-        conversationName,
+        conversationName: conversationName || 'Unnamed Conversation',
         messages: [],
       });
-      await conversation.save();
+      const savedConversation = await conversation.save();
+      console.log('Saved Conversation Details:', {
+        conversationId: savedConversation.conversationId,
+        conversationName: savedConversation.conversationName,
+      });
     }
 
     // Create and save system message
-    const systemMessage = await Message.createForConversation(conversation._id, {
+    const systemMessage = await (Message as any).createForConversation(conversation._id, {
       role: 'system',
       content: systemPrompt,
       timestamp: Date.now(),
     });
 
     // Create and save user message
-    const userMessage = await Message.createForConversation(conversation._id, {
+    const userMessage = await (Message as any).createForConversation(conversation._id, {
       role: 'user',
       content: userPrompt,
       timestamp: Date.now(),
@@ -140,7 +147,7 @@ export default async function handler(
     const assistantResponse = completion.choices[0]?.message?.content?.trim() ?? '';
 
     // Create and save assistant message
-    const assistantMessage = await Message.createForConversation(conversation._id, {
+    const assistantMessage = await (Message as any).createForConversation(conversation._id, {
       role: 'assistant',
       content: assistantResponse,
       timestamp: Date.now(),

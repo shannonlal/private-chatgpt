@@ -37,7 +37,7 @@ const ConversationSchema = new mongoose.Schema<ConversationDocument, Conversatio
     conversationName: {
       type: String,
       required: false,
-      default: null,
+      default: 'Unnamed Conversation',
     },
     messages: [
       {

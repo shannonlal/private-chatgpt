@@ -23,5 +23,4 @@ describe('ChatPage', () => {
     expect(messageDisplay).toBeInTheDocument();
     expect(promptInput).toBeInTheDocument();
   });
-
 });

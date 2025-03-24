@@ -238,7 +238,7 @@ const PromptInput: React.FC = () => {
             {isLoading ? (
               <span className="animate-spin">⏳</span>
             ) : (
-              <IconSend className="w-5 h-5" >Send</IconSend>
+              <IconSend className="w-5 h-5">Send</IconSend>
             )}
           </Button>
         </div>

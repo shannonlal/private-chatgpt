@@ -1,11 +1,9 @@
-import { Types } from 'mongoose';
-
 export interface Message {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-  timestamp: number;
   id?: string;
   conversationId?: string;
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+  timestamp?: number;
 }
 
 export interface ChatCompletionRequest {
@@ -15,19 +13,17 @@ export interface ChatCompletionRequest {
   conversationId?: string;
 }
 
-export interface ChatCompletionResponse {
-  assistantResponse: string;
-  conversationId: string;
-}
-
 export interface OpenAIErrorResponse {
   error: {
     message: string;
     type: string;
-    param?: string;
     code?: string;
+    param?: string;
   };
 }
 
-// Mongoose-specific types for reference in models
-export type MongoId = Types.ObjectId;
+export interface ChatCompletionResponse {
+  assistantResponse: string;
+  conversationId: string;
+  conversationName?: string;
+}

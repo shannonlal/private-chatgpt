@@ -63,13 +63,43 @@ export default async function handler(
       body;
 
     console.log('Conversation id', conversationId);
+    // Generate conversation name function
+    const generateConversationName = async (
+      systemPrompt: string,
+      userPrompt: string
+    ): Promise<string> => {
+      try {
+        const nameCompletion = await openai.chat.completions.create({
+          model: DEFAULT_MODEL,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Generate a concise 20-word description of a conversation based on the system and user prompts.',
+            },
+            { role: 'user', content: `System Prompt: ${systemPrompt}\nUser Prompt: ${userPrompt}` },
+          ],
+          max_tokens: 30,
+          temperature: 0.7,
+        });
+
+        return nameCompletion.choices[0]?.message?.content?.trim() ?? 'Unnamed Conversation';
+      } catch (error) {
+        console.error('Failed to generate conversation name:', error);
+        return 'Unnamed Conversation';
+      }
+    };
+
     // Find or create conversation
     let conversation = conversationId ? await Conversation.findOne({ conversationId }) : null;
 
     if (!conversation) {
       console.log('Create new conversation');
+      const conversationName = await generateConversationName(systemPrompt, userPrompt);
+
       conversation = new Conversation({
         conversationId: uuidv4(),
+        conversationName,
         messages: [],
       });
       await conversation.save();
@@ -123,6 +153,7 @@ export default async function handler(
     return res.status(200).json({
       assistantResponse,
       conversationId: conversation.conversationId,
+      conversationName: conversation.conversationName,
     });
   } catch (error) {
     console.error('OpenAI API Error:', error);

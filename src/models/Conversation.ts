@@ -8,6 +8,7 @@ export interface ConversationDocument extends mongoose.Document {
   createdAt: Date;
   updatedAt: Date;
   conversationId: string;
+  conversationName?: string;
 }
 
 // Define static methods interface
@@ -32,6 +33,11 @@ const ConversationSchema = new mongoose.Schema<ConversationDocument, Conversatio
       type: Boolean,
       default: false,
       index: true,
+    },
+    conversationName: {
+      type: String,
+      required: false,
+      default: 'Unnamed Conversation',
     },
     messages: [
       {

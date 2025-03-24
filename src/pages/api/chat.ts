@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { OpenAI } from 'openai';
 import { v4 as uuidv4 } from 'uuid';
@@ -63,27 +64,63 @@ export default async function handler(
       body;
 
     console.log('Conversation id', conversationId);
+    // Generate conversation name function
+    const generateConversationName = async (
+      systemPrompt: string,
+      userPrompt: string
+    ): Promise<string> => {
+      try {
+        console.log('Generating Conversation name');
+        const nameCompletion = await openai.chat.completions.create({
+          model: DEFAULT_MODEL,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Generate a concise 20-word description of a conversation based on the system and user prompts.',
+            },
+            { role: 'user', content: `System Prompt: ${systemPrompt}\nUser Prompt: ${userPrompt}` },
+          ],
+          max_tokens: 30,
+          temperature: 0.7,
+        });
+
+        return nameCompletion.choices[0]?.message?.content?.trim() ?? 'Unnamed Conversation';
+      } catch (error) {
+        console.error('Failed to generate conversation name:', error);
+        return 'Unnamed Conversation';
+      }
+    };
+
     // Find or create conversation
     let conversation = conversationId ? await Conversation.findOne({ conversationId }) : null;
 
     if (!conversation) {
       console.log('Create new conversation');
+      const conversationName = await generateConversationName(systemPrompt, userPrompt);
+      console.log('Conversation Name', conversationName);
+
       conversation = new Conversation({
         conversationId: uuidv4(),
+        conversationName: conversationName || 'Unnamed Conversation',
         messages: [],
       });
-      await conversation.save();
+      const savedConversation = await conversation.save();
+      console.log('Saved Conversation Details:', {
+        conversationId: savedConversation.conversationId,
+        conversationName: savedConversation.conversationName,
+      });
     }
 
     // Create and save system message
-    const systemMessage = await Message.createForConversation(conversation._id, {
+    const systemMessage = await (Message as any).createForConversation(conversation._id, {
       role: 'system',
       content: systemPrompt,
       timestamp: Date.now(),
     });
 
     // Create and save user message
-    const userMessage = await Message.createForConversation(conversation._id, {
+    const userMessage = await (Message as any).createForConversation(conversation._id, {
       role: 'user',
       content: userPrompt,
       timestamp: Date.now(),
@@ -110,7 +147,7 @@ export default async function handler(
     const assistantResponse = completion.choices[0]?.message?.content?.trim() ?? '';
 
     // Create and save assistant message
-    const assistantMessage = await Message.createForConversation(conversation._id, {
+    const assistantMessage = await (Message as any).createForConversation(conversation._id, {
       role: 'assistant',
       content: assistantResponse,
       timestamp: Date.now(),
@@ -123,6 +160,7 @@ export default async function handler(
     return res.status(200).json({
       assistantResponse,
       conversationId: conversation.conversationId,
+      conversationName: conversation.conversationName,
     });
   } catch (error) {
     console.error('OpenAI API Error:', error);

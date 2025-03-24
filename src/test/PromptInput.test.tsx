@@ -21,7 +21,9 @@ describe('PromptInput Component', () => {
       </ConversationProvider>
     );
 
-    expect(screen.getByPlaceholderText('Enter system prompt (optional)')).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText('Optional: Set system prompt to define AI behavior')
+    ).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Enter your message')).toBeInTheDocument();
   });
 
@@ -42,7 +44,9 @@ describe('PromptInput Component', () => {
       </ConversationProvider>
     );
 
-    const systemPromptInput = screen.getByPlaceholderText('Enter system prompt (optional)');
+    const systemPromptInput = screen.getByPlaceholderText(
+      'Optional: Set system prompt to define AI behavior'
+    );
     const userPromptInput = screen.getByPlaceholderText('Enter your message');
     const sendButton = screen.getByText('Send');
 

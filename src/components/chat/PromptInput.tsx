@@ -43,6 +43,8 @@ const PromptInput: React.FC = () => {
     setSystemPrompt: setContextSystemPrompt,
     setUserPrompt: setContextUserPrompt,
     conversationHistory,
+    currentConversationId,
+    setCurrentConversation,
   } = useConversation();
 
   // State for error handling
@@ -167,6 +169,7 @@ const PromptInput: React.FC = () => {
         systemPrompt: systemPrompt.trim() || 'You are a helpful AI assistant.',
         userPrompt: combinedUserPrompt,
         conversationHistory: conversationHistory,
+        conversationId: currentConversationId,
       };
 
       // Send request to chat API
@@ -186,7 +189,8 @@ const PromptInput: React.FC = () => {
       }
 
       const completionData = data as ChatCompletionResponse;
-
+      debugger;
+      setCurrentConversation(completionData.conversationId);
       // Add assistant response to history
       addAssistantMessageToHistory(completionData.assistantResponse);
     } catch (error) {
@@ -220,7 +224,7 @@ const PromptInput: React.FC = () => {
           <TextArea
             value={userPrompt}
             onChange={e => setUserPrompt(e.target.value)}
-            placeholder="Message Claude..."
+            placeholder="Enter your message"
             className="flex-1 min-h-[60px] max-h-[200px] resize-y border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
             rows={1}
           />
@@ -230,10 +234,11 @@ const PromptInput: React.FC = () => {
             disabled={(!userPrompt.trim() && uploadedFiles.length === 0) || isLoading}
             className="flex items-center justify-center w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50"
           >
+            <span>{isLoading ? 'Sending...' : 'Send'}</span>
             {isLoading ? (
               <span className="animate-spin">⏳</span>
             ) : (
-              <IconSend className="w-5 h-5" />
+              <IconSend className="w-5 h-5" >Send</IconSend>
             )}
           </Button>
         </div>

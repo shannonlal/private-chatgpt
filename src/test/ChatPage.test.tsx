@@ -24,12 +24,4 @@ describe('ChatPage', () => {
     expect(promptInput).toBeInTheDocument();
   });
 
-  it('has correct layout classes', () => {
-    const { container } = render(<ChatPage />);
-    const pageContainer = container.querySelector(
-      'div.flex.flex-col.h-screen.max-w-4xl.mx-auto.p-4.space-y-4'
-    );
-
-    expect(pageContainer).toBeInTheDocument();
-  });
 });

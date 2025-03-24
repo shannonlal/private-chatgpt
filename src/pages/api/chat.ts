@@ -62,10 +62,12 @@ export default async function handler(
     const { systemPrompt, userPrompt, conversationHistory, conversationId }: ChatCompletionRequest =
       body;
 
+    console.log('Conversation id', conversationId);
     // Find or create conversation
     let conversation = conversationId ? await Conversation.findOne({ conversationId }) : null;
 
     if (!conversation) {
+      console.log('Create new conversation');
       conversation = new Conversation({
         conversationId: uuidv4(),
         messages: [],

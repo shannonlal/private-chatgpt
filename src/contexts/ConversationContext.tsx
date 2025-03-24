@@ -39,6 +39,7 @@ export interface ConversationContextType {
   selectConversation: (conversationId: string) => Promise<void>;
   createNewConversation: () => void;
   fetchConversationsList: () => Promise<void>;
+  setCurrentConversation: (id: string) => void;
 }
 
 // Export Message type for use in tests
@@ -136,6 +137,10 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     setUserPrompt('');
   };
 
+  const setCurrentConversation = id => {
+    setCurrentConversationId(id);
+  };
+
   // Context value to be provided
   const contextValue: ConversationContextType = {
     systemPrompt,
@@ -152,6 +157,7 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     selectConversation,
     createNewConversation,
     fetchConversationsList,
+    setCurrentConversation,
   };
 
   return (

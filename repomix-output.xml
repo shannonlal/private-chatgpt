@@ -688,28 +688,6 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [userPrompt, setUserPrompt] = useState<string>('');
   const [conversationHistory, setConversationHistory] = useState<_Message[]>([]);
 
-  // Method to add a user message to conversation history
-  const addUserMessageToHistory = (content: string) => {
-    const newMessage: _Message = {
-      id: uuidv4(),
-      role: 'user',
-      content,
-      timestamp: Date.now(),
-    };
-    setConversationHistory(prevHistory => [...prevHistory, newMessage]);
-  };
-
-  // Method to add an assistant message to conversation history
-  const addAssistantMessageToHistory = (content: string) => {
-    const newMessage: _Message = {
-      id: uuidv4(),
-      role: 'assistant',
-      content,
-      timestamp: Date.now(),
-    };
-    setConversationHistory(prevHistory => [...prevHistory, newMessage]);
-  };
-
   // Generic method to add a message to conversation history
   const addMessageToHistory = (message: _Message) => {
     setConversationHistory(prevHistory => [...prevHistory, message]);
@@ -750,261 +728,14 @@ export const useConversation = (): ConversationContextType => {
 };
 </file>
 
-<file path="src/lib/mongodb.ts">
-import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGO_URI;
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGO_URI environment variable inside .env');
-}
-
-interface MongooseCache {
-  conn: mongoose.Connection | null;
-  promise: Promise<mongoose.Connection> | null;
-}
-
-// Use a type assertion to extend global
-interface CustomGlobal {
-  mongooseCache?: MongooseCache;
-}
-
-declare const global: CustomGlobal & typeof globalThis;
-
-function getMongooseCache(): MongooseCache {
-  if (!global.mongooseCache) {
-    global.mongooseCache = { conn: null, promise: null };
-  }
-  return global.mongooseCache;
-}
-
-async function connectMongoDB() {
-  const cached = getMongooseCache();
-
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    };
-
-    cached.promise = mongoose
-      .connect(MONGODB_URI!, opts)
-      .then(mongooseInstance => {
-        console.log('MongoDB connected successfully');
-        cached.conn = mongooseInstance.connection;
-        return cached.conn;
-      })
-      .catch(error => {
-        console.error('MongoDB connection error:', error);
-        cached.promise = null;
-        throw error;
-      });
-  }
-
-  try {
-    return await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    throw e;
-  }
-}
-
-export default connectMongoDB;
-
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  try {
-    await mongoose.connection.close();
-    console.log('MongoDB connection closed');
-    process.exit(0);
-  } catch (error) {
-    console.error('Error closing MongoDB connection:', error);
-    process.exit(1);
-  }
-});
-</file>
-
-<file path="src/models/Conversation.ts">
-import mongoose from 'mongoose';
-import { v4 as uuidv4 } from 'uuid';
-
-export interface ConversationDocument extends mongoose.Document {
-  userId?: string;
-  isDeleted: boolean;
-  messages: mongoose.Types.ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
-  conversationId: string;
-}
-
-// Define static methods interface
-interface ConversationModel extends mongoose.Model<ConversationDocument> {
-  findByConversationId(conversationId: string): Promise<ConversationDocument | null>;
-}
-
-const ConversationSchema = new mongoose.Schema<ConversationDocument, ConversationModel>(
-  {
-    conversationId: {
-      type: String,
-      default: uuidv4,
-      unique: true,
-      index: true,
-    },
-    userId: {
-      type: String,
-      required: false,
-      index: true,
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-      index: true,
-    },
-    messages: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Message',
-      },
-    ],
-  },
-  {
-    timestamps: true,
-    query: {
-      byNotDeleted() {
-        return this.where({ isDeleted: false });
-      },
-    },
-  }
-);
-
-// Soft delete method
-ConversationSchema.methods.softDelete = function () {
-  this.isDeleted = true;
-  return this.save();
-};
-
-// Method to add a message to the conversation
-ConversationSchema.methods.addMessage = async function (messageId: mongoose.Types.ObjectId) {
-  this.messages.push(messageId);
-  return this.save();
-};
-
-// Static method to find conversation by conversationId
-ConversationSchema.statics.findByConversationId = function (conversationId: string) {
-  return this.findOne({ conversationId });
-};
-
-// Prevent returning deleted conversations by default
-ConversationSchema.pre('find', function () {
-  this.where({ isDeleted: false });
-});
-
-export const Conversation =
-  mongoose.models.Conversation ||
-  mongoose.model<ConversationDocument, ConversationModel>('Conversation', ConversationSchema);
-
-export default Conversation;
-</file>
-
-<file path="src/models/Message.ts">
-import mongoose from 'mongoose';
-import { v4 as uuidv4 } from 'uuid';
-import { Message as MessageType } from '../types/chat';
-
-export interface MessageDocument extends Omit<MessageType, 'id'>, mongoose.Document {
-  _id: mongoose.Types.ObjectId;
-  conversation: mongoose.Types.ObjectId;
-  messageId: string;
-}
-
-// Define static methods interface
-interface MessageModel extends mongoose.Model<MessageDocument> {
-  createForConversation(
-    conversationId: mongoose.Types.ObjectId,
-    messageData: Partial<MessageDocument>
-  ): Promise<MessageDocument>;
-}
-
-const MessageSchema = new mongoose.Schema<MessageDocument, MessageModel>(
-  {
-    messageId: {
-      type: String,
-      default: uuidv4,
-      unique: true,
-      index: true,
-    },
-    role: {
-      type: String,
-      enum: ['system', 'user', 'assistant'],
-      required: true,
-      index: true,
-    },
-    content: {
-      type: String,
-      required: true,
-    },
-    timestamp: {
-      type: Number,
-      default: () => Date.now(),
-      index: true,
-    },
-    conversation: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Conversation',
-      required: true,
-      index: true,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-// Indexing for efficient querying
-MessageSchema.index({ conversation: 1, timestamp: -1 });
-
-// Static method to create a message for a specific conversation
-MessageSchema.statics.createForConversation = async function (
-  conversationId: mongoose.Types.ObjectId,
-  messageData: Partial<MessageDocument>
-) {
-  const message = new this({
-    ...messageData,
-    conversation: conversationId,
-  });
-  return message.save();
-};
-
-// Method to find messages by conversation
-MessageSchema.statics.findByConversation = function (conversationId: mongoose.Types.ObjectId) {
-  return this.find({ conversation: conversationId }).sort({ timestamp: 1 });
-};
-
-export const Message =
-  mongoose.models.Message ||
-  mongoose.model<MessageDocument, MessageModel>('Message', MessageSchema);
-
-export default Message;
-</file>
-
-<file path="src/pages/api/chat.ts">
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { OpenAI } from 'openai';
-import { v4 as uuidv4 } from 'uuid';
 import {
   ChatCompletionRequest,
   ChatCompletionResponse,
   OpenAIErrorResponse,
   Message as _Message,
 } from '../../types/chat';
-import connectMongoDB from '../../lib/mongodb';
-import Conversation from '../../models/Conversation';
-import Message from '../../models/Message';
+
 
 // Validate environment variables
 if (!process.env.OPENAI_API_KEY) {
@@ -1031,8 +762,6 @@ export default async function handler(
   }
 
   try {
-    // Connect to MongoDB
-    await connectMongoDB();
 
     // Manually parse the body
     const buffer = await new Promise<Buffer>((resolve, reject) => {
@@ -1054,33 +783,6 @@ export default async function handler(
       });
     }
 
-    const { systemPrompt, userPrompt, conversationHistory, conversationId }: ChatCompletionRequest =
-      body;
-
-    // Find or create conversation
-    let conversation = conversationId ? await Conversation.findOne({ conversationId }) : null;
-
-    if (!conversation) {
-      conversation = new Conversation({
-        conversationId: uuidv4(),
-        messages: [],
-      });
-      await conversation.save();
-    }
-
-    // Create and save system message
-    const systemMessage = await Message.createForConversation(conversation._id, {
-      role: 'system',
-      content: systemPrompt,
-      timestamp: Date.now(),
-    });
-
-    // Create and save user message
-    const userMessage = await Message.createForConversation(conversation._id, {
-      role: 'user',
-      content: userPrompt,
-      timestamp: Date.now(),
-    });
 
     // Construct messages for OpenAI API
     const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
@@ -1102,21 +804,7 @@ export default async function handler(
     // Extract assistant's response
     const assistantResponse = completion.choices[0]?.message?.content?.trim() ?? '';
 
-    // Create and save assistant message
-    const assistantMessage = await Message.createForConversation(conversation._id, {
-      role: 'assistant',
-      content: assistantResponse,
-      timestamp: Date.now(),
-    });
 
-    // Update conversation with new messages
-    conversation.messages.push(systemMessage._id, userMessage._id, assistantMessage._id);
-    await conversation.save();
-
-    return res.status(200).json({
-      assistantResponse,
-      conversationId: conversation.conversationId,
-    });
   } catch (error) {
     console.error('OpenAI API Error:', error);
 
@@ -1750,27 +1438,19 @@ export {};
 </file>
 
 <file path="src/types/chat.ts">
-import { Types } from 'mongoose';
 
-export interface Message {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-  timestamp: number;
-  id?: string;
-  conversationId?: string;
 }
 
 export interface ChatCompletionRequest {
   systemPrompt: string;
   userPrompt: string;
   conversationHistory?: Message[];
-  conversationId?: string;
+
 }
 
 export interface ChatCompletionResponse {
   assistantResponse: string;
-  conversationId: string;
-}
+
 
 export interface OpenAIErrorResponse {
   error: {
@@ -1781,8 +1461,6 @@ export interface OpenAIErrorResponse {
   };
 }
 
-// Mongoose-specific types for reference in models
-export type MongoId = Types.ObjectId;
 </file>
 
 <file path="src/ui-kit/__mocks__/gsap.ts">

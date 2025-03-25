@@ -41,6 +41,7 @@ export interface ConversationContextType {
   createNewConversation: () => void;
   fetchConversationsList: () => Promise<void>;
   setCurrentConversation: (id: string) => void;
+  deleteConversation: (conversationId: string) => Promise<void>; // Add this line
 }
 
 // Export Message type for use in tests
@@ -142,6 +143,33 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     setCurrentConversationId(id);
   };
 
+  // Method to delete a conversation
+  const deleteConversation = useCallback(
+    async (conversationId: string) => {
+      try {
+        // Delete conversation via API
+        await axios.delete(`/api/conversation/${conversationId}`);
+
+        // Remove the deleted conversation from the list
+        setConversations(prevConversations =>
+          prevConversations.filter(conv => conv.id !== conversationId)
+        );
+
+        // If the deleted conversation was the current one, create a new conversation
+        if (currentConversationId === conversationId) {
+          createNewConversation();
+        }
+
+        // Refresh the conversations list
+        await fetchConversationsList();
+      } catch (error) {
+        console.error('Failed to delete conversation', error);
+        // Optionally, you could add error handling to show a user-friendly message
+      }
+    },
+    [currentConversationId, createNewConversation, fetchConversationsList]
+  );
+
   // Context value to be provided
   const contextValue: ConversationContextType = {
     systemPrompt,
@@ -159,6 +187,7 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     createNewConversation,
     fetchConversationsList,
     setCurrentConversation,
+    deleteConversation,
   };
 
   return (

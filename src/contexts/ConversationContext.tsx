@@ -5,6 +5,7 @@ import React, {
   SetStateAction,
   ReactNode,
   useCallback,
+  useEffect,
 } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Message as _Message } from '../types/chat';
@@ -14,7 +15,7 @@ import axios from 'axios';
 export interface ConversationSummary {
   id: string;
   createdAt: number;
-  conversationName: string;
+  conversationName?: string;
   lastMessagePreview?: string;
 }
 
@@ -41,6 +42,8 @@ export interface ConversationContextType {
   createNewConversation: () => void;
   fetchConversationsList: () => Promise<void>;
   setCurrentConversation: (id: string) => void;
+  deleteConversation: (conversationId: string) => Promise<void>;
+  updateConversationName: (conversationId: string, newName: string) => Promise<ConversationSummary>;
 }
 
 // Export Message type for use in tests
@@ -66,6 +69,11 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
       console.error('Failed to fetch conversations', error);
     }
   }, []);
+
+  // Fetch conversations list when the provider mounts
+  useEffect(() => {
+    fetchConversationsList();
+  }, [fetchConversationsList]);
 
   // Method to select a conversation
   const selectConversation = useCallback(async (conversationId: string) => {
@@ -142,6 +150,56 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     setCurrentConversationId(id);
   };
 
+  // Method to delete a conversation
+  const deleteConversation = useCallback(
+    async (conversationId: string) => {
+      try {
+        // Delete conversation via API
+        await axios.delete(`/api/conversation/${conversationId}`);
+
+        // Remove the deleted conversation from the list
+        setConversations(prevConversations =>
+          prevConversations.filter(conv => conv.id !== conversationId)
+        );
+
+        // If the deleted conversation was the current one, create a new conversation
+        if (currentConversationId === conversationId) {
+          createNewConversation();
+        }
+
+        // Refresh the conversations list
+        await fetchConversationsList();
+      } catch (error) {
+        console.error('Failed to delete conversation', error);
+        // Optionally, you could add error handling to show a user-friendly message
+      }
+    },
+    [currentConversationId, createNewConversation, fetchConversationsList]
+  );
+
+  // Method to update conversation name
+  const updateConversationName = useCallback(async (conversationId: string, newName: string) => {
+    try {
+      const response = await axios.put(`/api/conversation/${conversationId}`, {
+        conversationName: newName,
+      });
+
+      // Update the conversations list with the new name
+      setConversations(prevConversations =>
+        prevConversations.map(conv =>
+          conv.id === conversationId
+            ? { ...conv, conversationName: response.data.conversation.conversationName }
+            : conv
+        )
+      );
+
+      return response.data.conversation;
+    } catch (error) {
+      console.error('Failed to update conversation name', error);
+      throw error;
+    }
+  }, []);
+
   // Context value to be provided
   const contextValue: ConversationContextType = {
     systemPrompt,
@@ -159,6 +217,8 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     createNewConversation,
     fetchConversationsList,
     setCurrentConversation,
+    deleteConversation,
+    updateConversationName,
   };
 
   return (

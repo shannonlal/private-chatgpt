@@ -26,6 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         $project: {
           id: '$_id',
           createdAt: 1,
+          conversationName: 1,
           lastMessagePreview: { $arrayElemAt: ['$latestMessage.content', 0] },
         },
       },
@@ -36,6 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const formattedConversations = conversations.map(conv => ({
       id: conv.id.toString(),
       createdAt: conv.createdAt,
+      conversationName: conv.conversationName || 'Unnamed Conversation',
       lastMessagePreview: conv.lastMessagePreview || '',
     }));
 

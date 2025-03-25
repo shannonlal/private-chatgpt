@@ -13,6 +13,7 @@ const ConversationSidebar: React.FC = () => {
   }, [fetchConversationsList]);
 
   const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
+  console.log('conversatoins', conversations);
 
   const handleDeleteClick = async (conversationId: string) => {
     if (confirmingDelete === conversationId) {
@@ -51,7 +52,7 @@ const ConversationSidebar: React.FC = () => {
                 {conversation.conversationName || 'Unnamed Conversation'}
                 <div onClick={() => selectConversation(conversation.id)} className="flex-grow pr-2">
                   <div className="text-sm text-gray-900">
-                    {new Date(conversation.createdAt).toLocaleDateString()}
+                    {conversation.conversationName || new Date(conversation.createdAt).toLocaleDateString()}
                   </div>
                   {conversation.lastMessagePreview && (
                     <div className="text-xs text-gray-500 truncate">

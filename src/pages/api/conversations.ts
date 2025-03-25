@@ -28,6 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           createdAt: 1,
           conversationName: 1,
           lastMessagePreview: { $arrayElemAt: ['$latestMessage.content', 0] },
+          conversationName:1,
         },
       },
       { $sort: { createdAt: -1 } },
@@ -36,10 +37,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Transform MongoDB _id to string
     const formattedConversations = conversations.map(conv => ({
       id: conv.id.toString(),
+      conversationName: conv.conversationName,
       createdAt: conv.createdAt,
       conversationName: conv.conversationName || 'Unnamed Conversation',
       lastMessagePreview: conv.lastMessagePreview || '',
     }));
+
+    console.log('Conversations', formattedConversations);
 
     res.status(200).json(formattedConversations);
   } catch (error) {

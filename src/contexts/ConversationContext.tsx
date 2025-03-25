@@ -5,6 +5,7 @@ import React, {
   SetStateAction,
   ReactNode,
   useCallback,
+  useEffect,
 } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Message as _Message } from '../types/chat';
@@ -14,7 +15,7 @@ import axios from 'axios';
 export interface ConversationSummary {
   id: string;
   createdAt: number;
-  conversationName: string;
+  conversationName?: string;
   lastMessagePreview?: string;
 }
 
@@ -41,7 +42,7 @@ export interface ConversationContextType {
   createNewConversation: () => void;
   fetchConversationsList: () => Promise<void>;
   setCurrentConversation: (id: string) => void;
-  deleteConversation: (conversationId: string) => Promise<void>; // Add this line
+  deleteConversation: (conversationId: string) => Promise<void>;
 }
 
 // Export Message type for use in tests
@@ -67,6 +68,11 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
       console.error('Failed to fetch conversations', error);
     }
   }, []);
+
+  // Fetch conversations list when the provider mounts
+  useEffect(() => {
+    fetchConversationsList();
+  }, [fetchConversationsList]);
 
   // Method to select a conversation
   const selectConversation = useCallback(async (conversationId: string) => {

@@ -43,6 +43,7 @@ export interface ConversationContextType {
   fetchConversationsList: () => Promise<void>;
   setCurrentConversation: (id: string) => void;
   deleteConversation: (conversationId: string) => Promise<void>;
+  updateConversationName: (conversationId: string, newName: string) => Promise<ConversationSummary>;
 }
 
 // Export Message type for use in tests
@@ -176,6 +177,29 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     [currentConversationId, createNewConversation, fetchConversationsList]
   );
 
+  // Method to update conversation name
+  const updateConversationName = useCallback(async (conversationId: string, newName: string) => {
+    try {
+      const response = await axios.put(`/api/conversation/${conversationId}`, {
+        conversationName: newName,
+      });
+
+      // Update the conversations list with the new name
+      setConversations(prevConversations =>
+        prevConversations.map(conv =>
+          conv.id === conversationId
+            ? { ...conv, conversationName: response.data.conversation.conversationName }
+            : conv
+        )
+      );
+
+      return response.data.conversation;
+    } catch (error) {
+      console.error('Failed to update conversation name', error);
+      throw error;
+    }
+  }, []);
+
   // Context value to be provided
   const contextValue: ConversationContextType = {
     systemPrompt,
@@ -194,6 +218,7 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     fetchConversationsList,
     setCurrentConversation,
     deleteConversation,
+    updateConversationName,
   };
 
   return (

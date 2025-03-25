@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           createdAt: 1,
           conversationName: 1,
           lastMessagePreview: { $arrayElemAt: ['$latestMessage.content', 0] },
-          conversationName:1,
+          conversationName: 1,
         },
       },
       { $sort: { createdAt: -1 } },

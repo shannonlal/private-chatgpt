@@ -14,6 +14,7 @@ import axios from 'axios';
 export interface ConversationSummary {
   id: string;
   createdAt: number;
+  conversationName: string;
   lastMessagePreview?: string;
 }
 
@@ -137,7 +138,7 @@ export const ConversationProvider: React.FC<{ children: ReactNode }> = ({ childr
     setUserPrompt('');
   };
 
-  const setCurrentConversation = id => {
+  const setCurrentConversation = (id: string) => {
     setCurrentConversationId(id);
   };
 
